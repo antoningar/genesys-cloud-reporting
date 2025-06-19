@@ -2,17 +2,17 @@
 # Manual edits may be lost in future updates.
 
 provider "registry.terraform.io/mypurecloud/genesyscloud" {
-  version     = "1.64.1"
-  constraints = "~> 1.64.1"
+  version     = "1.65.0"
+  constraints = "~> 1.65.0"
   hashes = [
-    "h1:werv7A7KtFAdn2WIVtKbGzUwHNJVXxTsdZO9kfWWnbk=",
-    "zh:11de00c39b84da5d9c2da3222ab9213d2eb2249bc25633b12e269062e034480f",
-    "zh:4783d3ee4b42b7031301c960856c5b7e53b3585660576fecb3fd9b0c4a4d0c1e",
-    "zh:4bd035608748b99c598df803becb1fa875af458cefda178409862b9bb68de741",
-    "zh:4dd917e03203975f60b0133f164d37d99bf421eb4ef72417d304e0bdf3fbfbd0",
-    "zh:6266159bd606418fbb47fd5c2068dc8bcabb99abf4014999d426492fa30189bb",
-    "zh:983348b411ebe56bfd8477064c9e430c87e8b9c019f493b42ea33dc19faf1b22",
-    "zh:b9a1916ed9a0f0c00d5367fe7ce17ae021c3f0c038929042d742e86de3a76de0",
-    "zh:f2843d7ab16f103aa21d957611f228644f1f193a13760849023d3c58adb209cd",
+    "h1:2j5RJfBJKQ5LlSjiniX3azGzLeDeMc2gKkCellRSay4=",
+    "zh:2e066a8828ecf299161a8962e0489bae69da34b5d2fcc6f4b4b1d79b9fa294c1",
+    "zh:948a5279422f22f842ac02fca6924d06ab149f23314b7a615fb88aa4fc6ae470",
+    "zh:9f24990518edb2638a08686720c9c1f0c503e923624c507e02380ab5168b7879",
+    "zh:a0ff4d34fb1cd12dd355ea11ce85ad917d9ee63e2abdffda01ac3a54add7c841",
+    "zh:d6c37d1ea9fa51967695c4695d2dc15433940dde86602f8492fdea83c6acf632",
+    "zh:e0ec1eec4746cd8d020f3059fe282c78ad883e6523640938f11d1820dfd23926",
+    "zh:ec55d00117e512625e86420de3a886e0fe7b8bb3c091ea4564e66f148452f659",
+    "zh:f8507075dc91c9db6dce1f1eb69512dadf239eecfee8cdcebd170b43e7a91640",
   ]
 }
