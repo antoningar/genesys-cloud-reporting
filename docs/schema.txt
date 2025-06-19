@@ -1,0 +1,6 @@
+Here is how my ow custom Genesys Cloud exporter works :
+1. An outbound campaign is running every days
+2. A pre-call rull cancel the call and run a data action
+3. Data action execute a workflow who start by execution a function action
+4. Function action extract all datas I need to have on a daily basis
+5. Workflow format function result and send it by mail

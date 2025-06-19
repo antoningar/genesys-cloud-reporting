@@ -1,0 +1,19 @@
+Avoir des exports personnalisés Genesys Cloud, c'était compliqué pour moi !
+
+Les exports planifiés sont pratiques.
+Mais j'ai besoin d'en combiner plusieurs et de les analyser individuellement.
+
+Développer une solution externe me fait gagner du temps.
+Mais l'intégration est complexe selon le contexte client.
+
+Au final, j'ai trouvé ma solution parfaite : un mix des deux !
+
+Tout est géré à 100 % dans Genesys Cloud.
+Une Genesys Cloud Function en TypeScript me permet de cibler précisément les données utiles.
+Son exécution est automatisée via des objets Genesys (campagnes sortantes, workflows...).
+
+Et pour un déploiement simplifié sur n'importe quel environnement, tout est packagé avec Cx As Code.
+Le projet est dispo sur mon GitHub :
+
+https://developer.genesys.cloud/blog/2025-01-14-genesys-functions/
+https://github.com/antoningar/genesys-cloud-exporter
