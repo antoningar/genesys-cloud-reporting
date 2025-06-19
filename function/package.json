@@ -3,7 +3,18 @@
   "version": "1.0.0",
   "description": "",
   "type": "commonjs",
+  "main": "dist/main.js",
+  "scripts": {
+    "build": "tsc",
+    "dev": "ts-node main.ts",
+    "zipnodev": "npm install --omit=dev && zip -r function_exporter.zip dist/ node_modules/"
+  },
   "dependencies": {
     "purecloud-platform-client-v2": "^217.0.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.0.0",
+    "ts-node": "^10.9.0",
+    "@types/node": "^20.0.0"
   }
 }

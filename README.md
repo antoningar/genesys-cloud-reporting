@@ -155,8 +155,5 @@ import [zip](./function/function_exporter.zip)
 
 ## Build Genesys Function
 
-1. install dependencies  
-   `npm install`
-2. zip everything  
-   windows: `zip a -r function_exporter.zip ./*`  
-   linux: `zip -r function_exporter.zip *`
+1. Create zip file  
+   `npm run zipnodev`

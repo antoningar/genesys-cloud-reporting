@@ -1,6 +1,107 @@
-const platformClient = require("purecloud-platform-client-v2");
+import * as platformClient from "purecloud-platform-client-v2";
 
-function setLogger(client) {
+interface EventInput {
+  interval?: string;
+  maxDuration?: number;
+}
+
+interface ContextInput {
+  clientContext: {
+    gc_client_id: string;
+    gc_client_secret: string;
+    gc_aws_region: string;
+  };
+}
+
+interface ConversationFilter {
+  type: string;
+  predicates: Array<{
+    metric: string;
+    operator?: string;
+    range?: {
+      gte: number;
+      lte: number;
+    };
+  }>;
+}
+
+interface ConversationBody {
+  conversationFilters: ConversationFilter[];
+  interval: string;
+}
+
+interface ActionFilter {
+  type: string;
+  clauses?: Array<{
+    type: string;
+    predicates: Array<{
+      dimension: string;
+      operator: string;
+    }>;
+  }>;
+}
+
+interface ActionBody {
+  filter: ActionFilter;
+  metrics: string[];
+  groupBy: string[];
+  interval: string;
+}
+
+interface SegmentFilter {
+  type: string;
+  predicates: Array<{
+    type: string;
+    dimension: string;
+    value: string;
+  }>;
+}
+
+interface FlowErrorBody {
+  segmentFilters: SegmentFilter[];
+  interval: string;
+}
+
+interface AggregateData {
+  group?: { [key: string]: string };
+  data?: Array<{
+    metrics?: Array<{
+      stats?: {
+        count?: number;
+      };
+    }>;
+  }>;
+}
+
+interface AggregateResult {
+  results?: AggregateData[];
+}
+
+interface ClearedAggregate {
+  actionId: string;
+  responseStatus: string;
+  errorType: string;
+  count: number;
+}
+
+interface ConversationResult {
+  conversations?: Array<{
+    conversationId?: string;
+  }>;
+}
+
+interface ClearedConversations {
+  conversations: string[];
+  total: number;
+}
+
+interface HandlerResult {
+  shortConversations: ClearedConversations;
+  flowErrors: ClearedConversations;
+  dataActionErrors: ClearedAggregate[];
+}
+
+function setLogger(client: any): void {
   client.config.logger.log_level =
     client.config.logger.logLevelEnum.level.LTrace;
   client.config.logger.log_format =
@@ -12,7 +113,7 @@ function setLogger(client) {
   client.config.logger.setLogger();
 }
 
-function getYesterdayInterval() {
+function getYesterdayInterval(): string {
   const now = new Date();
 
   // Get yesterday's date
@@ -31,35 +132,30 @@ function getYesterdayInterval() {
   return `${startISO}/${endISO}`;
 }
 
-function getInterval(event) {
+function getInterval(event: EventInput): [string, number] {
   let interval = event.interval;
   let maxDuration = event.maxDuration;
 
-  if (!maxDuration) {
-    maxDuration = 1000;
-  }
-
-  if (!interval) {
-    interval = getYesterdayInterval();
-  }
+  maxDuration ??= 1000;
+  interval ??= getYesterdayInterval();
 
   return [interval, maxDuration];
 }
 
-function getContextParams(context) {
+function getContextParams(context: ContextInput): [string, string, string] {
   const clientContext = context.clientContext;
   const clientId = clientContext.gc_client_id;
   const clientSecret = clientContext.gc_client_secret;
   const region = clientContext.gc_aws_region;
 
   if (!clientId || !clientSecret || !region) {
-    throw new Error("input mising");
+    throw new Error("input missing");
   }
 
   return [clientId, clientSecret, region];
 }
 
-function buildShortConversationBody(interval, maxDuration) {
+function buildShortConversationBody(interval: string, maxDuration: number): ConversationBody {
   return {
     conversationFilters: [
       {
@@ -83,16 +179,14 @@ function buildShortConversationBody(interval, maxDuration) {
   };
 }
 
-async function getShortConversations(interval, maxDuration) {
+async function getShortConversations(interval: string, maxDuration: number): Promise<ClearedConversations> {
   const body = buildShortConversationBody(interval, maxDuration);
-  const conversations = await getConversations(
-    body
-  );
+  const conversations = await getConversations(body);
   const clearedConversations = clearConversations(conversations);
   return clearedConversations;
 }
 
-function buildActionBody(interval) {
+function buildActionBody(interval: string): ActionBody {
   return {
     filter: {
       type: "and",
@@ -114,8 +208,8 @@ function buildActionBody(interval) {
   };
 }
 
-function clearAggregates(datas) {
-  const clearedAggregates = [];
+function clearAggregates(datas: AggregateResult): ClearedAggregate[] {
+  const clearedAggregates: ClearedAggregate[] = [];
 
   datas?.results?.forEach((aggregate) => {
     const clearedAggregate = clearAggregate(aggregate);
@@ -127,36 +221,45 @@ function clearAggregates(datas) {
   return clearedAggregates;
 }
 
-function clearAggregate(aggregate) {
+function clearAggregate(aggregate: AggregateData): ClearedAggregate | undefined {
+  if (!aggregate.group || !aggregate.data?.[0]?.metrics?.[0]?.stats) {
+    return;
+  }
+  
   const errorType = aggregate.group.errorType;
-  if (errorType == "NONE") {
+  if (errorType === "NONE") {
     return;
   }
 
-  const responeStatus = aggregate.group.responseStatus;
+  const responseStatus = aggregate.group.responseStatus;
   const actionId = aggregate.group.actionId;
   const count = aggregate.data[0].metrics[0].stats.count;
+  
+  if (!actionId || !responseStatus || !errorType || count === undefined) {
+    return;
+  }
+  
   return {
     actionId: actionId,
-    responseStatus: responeStatus,
+    responseStatus: responseStatus,
     errorType: errorType,
     count: count,
   };
 }
 
-async function getAggregates(body) {
+async function getAggregates(body: ActionBody): Promise<AggregateResult> {
   const analyticsApi = new platformClient.AnalyticsApi();
   return await analyticsApi.postAnalyticsActionsAggregatesQuery(body);
 }
 
-async function getDataActions(interval) {
+async function getDataActions(interval: string): Promise<ClearedAggregate[]> {
   const body = buildActionBody(interval);
   const aggregates = await getAggregates(body);
 
   return clearAggregates(aggregates);
 }
 
-function buildFlowErrorBody(interval) {
+function buildFlowErrorBody(interval: string): FlowErrorBody {
   return {
     segmentFilters: [
       {
@@ -174,13 +277,13 @@ function buildFlowErrorBody(interval) {
   };
 }
 
-async function getConversations(body) {
+async function getConversations(body: ConversationBody | FlowErrorBody): Promise<ConversationResult> {
   const conversationApi = new platformClient.ConversationsApi();
   return await conversationApi.postAnalyticsConversationsDetailsQuery(body);
 }
 
-function clearConversations(datas) {
-  const clearedConversations = [];
+function clearConversations(datas: ConversationResult): ClearedConversations {
+  const clearedConversations: string[] = [];
 
   datas?.conversations?.forEach((conversation) => {
     const clearedConversation = conversation.conversationId;
@@ -195,14 +298,14 @@ function clearConversations(datas) {
   };
 }
 
-async function getFlowsErrors(interval) {
+async function getFlowsErrors(interval: string): Promise<ClearedConversations> {
   const body = buildFlowErrorBody(interval);
   const conversations = await getConversations(body);
 
   return clearConversations(conversations);
 }
 
-exports.handler = async (event, context) => {
+export const handler = async (event: EventInput, context: ContextInput): Promise<HandlerResult | undefined> => {
   try {
     const [interval, maxDuration] = getInterval(event);
     const [clientId, clientSecret, region] = getContextParams(context);
@@ -220,7 +323,7 @@ exports.handler = async (event, context) => {
       shortConversations: shortConversations,
       flowErrors: flowErrors,
       dataActionErrors: dataActions
-    }
+    };
 
   } catch (error) {
     console.log(error);
@@ -229,16 +332,16 @@ exports.handler = async (event, context) => {
 };
 
 if (require.main === module) {
-  const customContext = {
+  const customContext: ContextInput = {
     clientContext: {
       gc_client_id: "",
       gc_client_secret: "",
-      gc_aws_region: "eu_west_1",
+      gc_aws_region: "",
     },
   };
-  const customEvent = {
+  const customEvent: EventInput = {
     interval: "2025-01-31T23:00:00.000Z/2025-02-28T23:00:00.000Z",
-    maxDuration: "",
+    maxDuration: 0,
   };
   handler(customEvent, customContext)
     .then((data) => console.log(data))
