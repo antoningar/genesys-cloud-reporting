@@ -4,12 +4,13 @@ variable "aws_region" { default = "" }
 variable "function_name" { default = "" }
 variable "mails" { default = "" }
 variable "edge_group_name" { default = "" }
+variable "genesys_cloud_integration" { default = "" }
 
 terraform {
   required_providers {
     genesyscloud = {
       source  = "mypurecloud/genesyscloud"
-      version = "~> 1.65.0"
+      version = "~> 1.68.1"
     }
   }
 }

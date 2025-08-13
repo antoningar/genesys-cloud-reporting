@@ -1,7 +1,7 @@
 workflow:
   name: Exporter_Orchestrator
   description: ""
-  division: Home
+  division: {{division_name}}
   startUpRef: "/workflow/states/state[Initial State_11]"
   defaultLanguage: fr-fr
   supportedLanguages:

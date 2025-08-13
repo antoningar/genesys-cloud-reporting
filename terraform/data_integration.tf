@@ -1,3 +1,3 @@
 data "genesyscloud_integration" "genesys_integration" {
-  name = "Genesys Cloud Data Actions"
+  name = var.genesys_cloud_integration
 }

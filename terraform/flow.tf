@@ -3,6 +3,7 @@ resource "genesyscloud_flow" "flow" {
   file_content_hash = filesha256("./Exporter_Orchestrator.yaml")
 
   substitutions = {
+    division_name     = genesyscloud_auth_division.exporter_division.name
     mails         = var.mails
     function_name = var.function_name
     integration   = genesyscloud_integration.exporter_function_integration.config[0].name
